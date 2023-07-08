@@ -2,7 +2,7 @@ import './App.css';
 import { useAuth0 } from "@auth0/auth0-react";
 import {Route, Routes} from "react-router-dom";
 import Home from './Home';
-// import { AuthenticationGuard } from "./authentication-guard";
+
 
 function App() {
 
@@ -19,7 +19,7 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route path="/" element={<Home/>}/>
+        <Route path="/*" element={<Home/>}/>
       </Routes>
     </div>
   );

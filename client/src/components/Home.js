@@ -1,47 +1,154 @@
+import React, { useState, useEffect } from "react";
+import ContactList from "./ContactList";
+import AddContact from "./AddContact";
+import { LogoutButton } from "./LogOutButton";
 import { LoginButton } from "./LoginButton";
-import {LogoutButton} from "./LogOutButton";
 import { useAuth0 } from "@auth0/auth0-react";
-import axios from "axios";
-
+import { Route, Routes } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
+import {
+  fetchContacts,
+  addContact,
+  updateContact,
+  deleteContact,
+} from "../api/contacts";
+import ContactDetail from "./ContactDetail";
+import EditContact from "./EditContact";
 
 const Home = () => {
+  const [currentPage, setCurrentPage] = useState(1);
 
-    const { isAuthenticated,getAccessTokenSilently } = useAuth0();
-    async function getData(){
-        try{
-        const token = await getAccessTokenSilently()
-        const data = await axios.get("http://localhost:3006/api/data",{
-        headers:{
-            Authorization: `Bearer ${token}` 
-        }
-        });
-        console.log(data);
-        }catch(err){
-        console.log(err.message);
-        }
+  const LOCAL_STORAGE_KEY = "contacts";
+  const [contacts, setContacts] = useState(() => {
+    const storedContacts = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+    return storedContacts || [];
+  });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+
+  useEffect(() => {
+    const storedContacts = async () => {
+      const response = await fetchContacts();
+      return response.data;
+    };
+    const getAllContacts = async () => {
+      const allContacts = await storedContacts();
+      if (allContacts) setContacts(allContacts);
+    };
+
+    getAllContacts();
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(contacts));
+  }, [contacts]);
+
+  const addContactHandler = async (contact) => {
+    const request = {
+      id: uuidv4(),
+      ...contact,
+    };
+
+    const response = await addContact(request);
+    const data = JSON.parse(response.config.data);
+    const updatedContacts = [...contacts, data];
+    setContacts(updatedContacts);
+  };
+
+  const updateContactHandler = async (id, updatedContact) => {
+    try {
+      
+      const updatedContacts = contacts.map((contact) =>
+        contact.id === id ? updatedContact : contact
+      );
+      console.log(updatedContacts);
+      setContacts(updatedContacts);
+      await updateContact(id, updatedContact);
+    } catch (error) {
+      console.log(error);
     }
+  };
+  const removeContactHandler = async (id) => {
+    try {
+      await deleteContact(id); // Delete from server
+      const newContactList = contacts.filter((contact) => contact.id !== id);
+      setContacts(newContactList); // Delete locally
+    } catch (error) {
+      console.error("Failed to delete contact:", error);
+    }
+  };
 
-    return (
-        <div>
-            <header>
-                {isAuthenticated && (
-                <>
-                    <p>You are logged in.</p>
-                    <LogoutButton/>
-                    <button onClick={getData}>Click me</button>
-                </>
-                )}
-                {!isAuthenticated && (
-                <>
-                    <p>You are not logged in.</p>
-                    <LoginButton/>
-                    <button onClick={getData}>Click me</button>
-                    
-                </>
-                )}
-            </header>
-        </div>
-    )
-}
+  const searchHandler = (searchTerm) => {
+    setSearchTerm(searchTerm);
+    if (searchTerm !== "") {
+      const newContactList = contacts.filter((contact) => {
+        return Object.values(contact)
+          .join("")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+      });
+      setSearchResults(newContactList);
+    } else {
+      setSearchResults(contacts);
+    }
+  };
+
+  const { isAuthenticated } = useAuth0();
+  return (
+    <div>
+      <header>
+        {isAuthenticated && (
+          <>
+            <p>You are logged in.</p>
+            <Routes>
+              <Route
+                path="/contact-list"
+                element={
+                  <ContactList
+                    searchResults={
+                      searchTerm.length < 1 ? contacts : searchResults
+                    }
+                    getContactId={removeContactHandler}
+                    term={searchTerm}
+                    searchKeyWord={searchHandler}
+                    currentPage={currentPage}
+                    setPage={setCurrentPage}
+                  />
+                }
+              />
+              <Route
+                path="/add"
+                element={<AddContact addContactHandler={addContactHandler} />}
+              />
+              <Route
+                path="/contact/:id"
+                element={<ContactDetail contacts={contacts} />}
+              />
+              <Route
+                path="/edit/:id"
+                element={
+                  <EditContact
+                    updateContactHandler={updateContactHandler}
+                    contacts={contacts}
+                  />
+                }
+              />
+            </Routes>
+
+            <LogoutButton />
+            {/* <button onClick={getData}>Click me</button> */}
+          </>
+        )}
+        {!isAuthenticated && (
+          <>
+            <p>You are not logged in.</p>
+            <LoginButton />
+            {/* <button onClick={getData}>Click me</button> */}
+          </>
+        )}
+      </header>
+    </div>
+  );
+};
 
 export default Home;

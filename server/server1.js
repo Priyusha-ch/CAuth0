@@ -1,32 +1,32 @@
-const express = require('express');
-const { auth, requiresAuth } = require('express-openid-connect');
-const app = express();
+// const express = require('express');
+// const { auth, requiresAuth } = require('express-openid-connect');
+// const app = express();
 
-const config = {
-  authRequired: false,
-  auth0Logout: true,
-  baseURL: 'http://localhost:3000',
-  clientID: 'zs8X07CAHrTc7JT8TUYNjhr8UpYNG9ws2',
-  issuerBaseURL: 'https://dev-jx204ifax2tpok03.us.auth0.com',
-  secret: 'babybaby'
-};
+// const config = {
+//   authRequired: false,
+//   auth0Logout: true,
+//   baseURL: 'http://localhost:3000',
+//   clientID: 'zs8X07CAHrTc7JT8TUYNjhr8UpYNG9ws2',
+//   issuerBaseURL: 'https://dev-jx204ifax2tpok03.us.auth0.com',
+//   secret: 'babybaby'
+// };
 
-// The `auth` router attaches /login, /logout
-// and /callback routes to the baseURL
-app.use(auth(config));
+// // The `auth` router attaches /login, /logout
+// // and /callback routes to the baseURL
+// app.use(auth(config));
 
-// req.oidc.isAuthenticated is provided from the auth router
-app.get('/', (req, res) => {
-  res.send(
-    req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out'
-  )
-});
+// // req.oidc.isAuthenticated is provided from the auth router
+// app.get('/', (req, res) => {
+//   res.send(
+//     req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out'
+//   )
+// });
 
-// The /profile route will show the user profile as JSON
-app.get('/profile', requiresAuth(), (req, res) => {
-  res.send(JSON.stringify(req.oidc.user, null, 2));
-});
+// // The /profile route will show the user profile as JSON
+// app.get('/profile', requiresAuth(), (req, res) => {
+//   res.send(JSON.stringify(req.oidc.user, null, 2));
+// });
 
-app.listen(3004, function() {
-  console.log('Listening on http://localhost:3000');
-});
+// app.listen(3004, function() {
+//   console.log('Listening on http://localhost:3000');
+// });
