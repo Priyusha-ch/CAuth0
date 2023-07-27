@@ -1,9 +1,12 @@
 // const { auth, requiresAuth } = require('express-openid-connect');
+const axios = require('axios');
+const jwt = require('jsonwebtoken');
 const cors = require("cors");
 const dotenv = require("dotenv");
 const express = require("express");
 const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb');
+
 // const helmet = require("helmet");
 // const nocache = require("nocache");
 // const { messagesRouter } = require("./messages/messages.router");
@@ -53,9 +56,9 @@ dotenv.config();
   mongoose
   .connect('mongodb://127.0.0.1:27017/contactdb', {
     useNewUrlParser: true,
-    useUnifiedTopology: true,
+    useUnifiedTopology: true,    
   })
-  .then(() => {
+  .then(() => {    
     const db = mongoose.connection;
     contactsCollection = db.collection('contacts');
   console.log('Connected to the database');
@@ -116,7 +119,65 @@ dotenv.config();
   }
 });
   
- 
+ // Replace these values with your Auth0 credentials
+const auth0Domain = 'dev-jx204ifax2tpok03.us.auth0.com';
+const auth0ClientId = 'zs8X07CAHrTc7JT8TUYNjhr8UpYNG9ws';
+const auth0ClientSecret = 'gXLNQejxDeMPNfud6PvldkwMx5U2xu5ubkJhBjMaFSYRKcgO';
+const auth0ManagementApiAudience = `https://dev-jx204ifax2tpok03.us.auth0.com/api/v2/`;
+
+// API endpoint for user registration
+app.post('/api/register', async (req, res) => {
+ console.log("In Register");
+  try {
+    // const { email, password, firstName, lastName } = req.body.formData;
+    const { firstName, lastName, email, password, } = req.body.formData;
+    console.log(email);
+    console.log(password);
+
+    // Call Auth0 Management API to create a new user
+    const response = await axios.post(
+      `https://dev-jx204ifax2tpok03.us.auth0.com/dbconnections/signup`,
+      {
+        "client_id": "zs8X07CAHrTc7JT8TUYNjhr8UpYNG9ws",
+        "email": email,
+        "password": password,
+        "connection": "Username-Password-Authentication",
+        "username": firstName + '-' + lastName,
+        "given_name": firstName + ' ' + lastName,
+        "family_name": lastName,
+        "name": firstName + ' ' + lastName,
+        "nickname": firstName,
+        "picture": "http://example.org/jdoe.png",
+        "user_metadata": { plan: 'silver', team_id: 'a111' }// Replace with your connection type
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+           Authorization: `Bearer ${generateManagementApiAccessToken()}`,
+        },
+      }
+    );
+    // User registered successfully
+    res.json({ message: 'User registered successfully', user: response.data });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error registering user' });
+  }
+});
+
+// Helper function to generate Auth0 Management API access token
+function generateManagementApiAccessToken() {
+  // Replace 'YOUR_AUTH0_CLIENT_SECRET' with your actual Auth0 Client Secret
+  const tokenPayload = {
+    iss: auth0ClientId,
+    sub: auth0ClientId,
+    aud: auth0ManagementApiAudience,
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + 86400, // 1 day expiration
+  };
+
+  return jwt.sign(tokenPayload, auth0ClientSecret);
+}
 
   
 

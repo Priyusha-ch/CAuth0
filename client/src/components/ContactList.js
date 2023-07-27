@@ -54,7 +54,7 @@ const ContactList = (props) => {
           <FontAwesomeIcon icon={faSearch} className="fa-search" />
         </div>
       </div>
-      <div>
+      <div style={{marginTop:"10px", marginBottom:"20px"}}>
         <label>
           View:
           <select value={gridView ? "kendo" : "normal"} onChange={toggleGridView}>

@@ -55,7 +55,7 @@ const KendoReactGridView = (props) => {
     return (
       <td >
         <Link to={{ pathname: `/edit/${id}`, state: { contact: props.dataItem } }}>
-          <button style={{ color: "blue" }}>
+          <button style={{ color: "blue", marginRight:"10px" }}>
             Edit
           </button>
         </Link>

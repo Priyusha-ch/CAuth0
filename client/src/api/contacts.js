@@ -61,8 +61,10 @@ const api = axios.create({
 export const fetchContacts = () => api.get('/api/contacts');
 export const addContact = (contact) => api.post('/api/contacts', contact);
 export const updateContact = (id, contact) => api.put(`/api/contacts/${id}`, contact);
-// export const deleteContact = (id,contact) => api.delete(`/api/contacts/${id}`,contact);
 export const deleteContact = (id) => api.delete(`/api/contacts/${id}`);
+// export const signUpUser = (username, email, password) => api.post('/api/signup', { username, email, password });
+export const loginUser = (email, password) => api.post('/api/login', { email, password });
+export const singup = (formData) => api.post('/api/register', formData)
 
 
 // export const updateContact = async (id, contact) => {
@@ -78,7 +80,7 @@ export const deleteContact = (id) => api.delete(`/api/contacts/${id}`);
 //   }
 // };
 
-
+// export const deleteContact = (id,contact) => api.delete(`/api/contacts/${id}`,contact);
 
 
 

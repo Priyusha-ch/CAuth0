@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import ContactList from "./ContactList";
 import AddContact from "./AddContact";
 import { LogoutButton } from "./LogOutButton";
-import { LoginButton } from "./LoginButton";
+// import { LoginButton } from "./LoginButton";
+import {SignUp} from "./SignUp";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Route, Routes } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
@@ -11,6 +12,7 @@ import {
   addContact,
   updateContact,
   deleteContact,
+  singup,
 } from "../api/contacts";
 import ContactDetail from "./ContactDetail";
 import EditContact from "./EditContact";
@@ -92,7 +94,18 @@ const Home = () => {
       setSearchResults(contacts);
     }
   };
+  const singupHandler = async (formData) => {
+    const request = {
+      id: uuidv4(),
+      ...formData,
+    };
 
+    const response = await singup(request);
+    const data = JSON.parse(response.config.data);
+    console.log(data);
+  };
+
+  
   const { isAuthenticated } = useAuth0();
   return (
     <div>
@@ -141,9 +154,7 @@ const Home = () => {
         )}
         {!isAuthenticated && (
           <>
-            <p>You are not logged in.</p>
-            <LoginButton />
-            {/* <button onClick={getData}>Click me</button> */}
+          <SignUp singupHandler={singupHandler}/>
           </>
         )}
       </header>
